@@ -28,6 +28,8 @@ from src.batch import generate_batch, generate_week_batch
 from src.templates import get_template, generate_niche_post, list_niches, NICHES
 from src.competitor import analyze_competitor, generate_competitor_content, find_competitors
 from src.multilang import translate_caption, translate_batch, create_multilingual_post, get_supported_languages
+from src.daemon import start_daemon, stop_daemon, daemon_status, run_once
+from src.watcher import watch_folder
 
 
 def cmd_post(args):
@@ -322,6 +324,23 @@ def cmd_translate(args):
         return translate_caption(args.caption, args.target_lang)
 
 
+def cmd_daemon(args):
+    if args.action == "start":
+        print("Iniciando servico em background...")
+        start_daemon()
+    elif args.action == "stop":
+        stop_daemon()
+    elif args.action == "status":
+        daemon_status()
+    elif args.action == "once":
+        run_once()
+
+
+def cmd_watcher(args):
+    print("Iniciando monitor de pasta...")
+    watch_folder()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Automacao completa de redes sociais com IA",
@@ -452,6 +471,11 @@ Comandos disponiveis:
     p_translate.add_argument("--multilang", action="store_true", help="Post em multiplas linguas")
     p_translate.add_argument("--topic", help="Topico (para post multilingue)")
 
+    p_daemon = subparsers.add_parser("daemon", help="Servico em background")
+    p_daemon.add_argument("action", choices=["start", "stop", "status", "once"])
+
+    p_watcher = subparsers.add_parser("watcher", help="Monitorar pasta inbox/")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -478,6 +502,8 @@ Comandos disponiveis:
         "templates": cmd_templates,
         "competitor": cmd_competitor,
         "translate": cmd_translate,
+        "daemon": cmd_daemon,
+        "watcher": cmd_watcher,
     }
 
     func = commands.get(args.command)

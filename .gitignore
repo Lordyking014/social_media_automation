@@ -5,6 +5,11 @@ __pycache__/
 *.png
 *.jpg
 *.jpeg
+*.webp
 schedule.json
 content_calendar.json
 *.log
+.git-rewrite/
+inbox/
+processed/
+data/
