@@ -3,10 +3,25 @@ from PIL import Image
 import numpy as np
 
 
+def _validate_path(path: str, check_exists: bool = False) -> str:
+    path = os.path.normpath(path)
+    if ".." in path:
+        raise ValueError(f"Caminho invalido: {path}")
+    if check_exists and not os.path.exists(path):
+        raise ValueError(f"Arquivo nao existe: {path}")
+    return path
+
+
 def remove_background_simple(image_path: str, output_path: str = None, threshold: int = 240) -> str:
+    image_path = _validate_path(image_path, check_exists=True)
+
     if output_path is None:
         base, ext = os.path.splitext(image_path)
         output_path = f"{base}_nobg{ext}"
+    else:
+        output_path = _validate_path(output_path)
+
+    threshold = max(0, min(255, threshold))
 
     img = Image.open(image_path).convert("RGBA")
     data = np.array(img)
@@ -28,9 +43,15 @@ def change_background(
     background_color: tuple = (255, 255, 255),
     output_path: str = None,
 ) -> str:
+    image_path = _validate_path(image_path, check_exists=True)
+
     if output_path is None:
         base, ext = os.path.splitext(image_path)
         output_path = f"{base}_newbg{ext}"
+    else:
+        output_path = _validate_path(output_path)
+
+    background_color = tuple(max(0, min(255, c)) for c in background_color[:3])
 
     img = Image.open(image_path).convert("RGBA")
     data = np.array(img)
@@ -58,6 +79,11 @@ def create_gradient_bg(
     color2: tuple = (253, 29, 29),
     output_path: str = "gradient_bg.png",
 ) -> str:
+    output_path = _validate_path(output_path)
+
+    width = max(100, min(4096, width))
+    height = max(100, min(4096, height))
+
     img = Image.new("RGB", (width, height))
     pixels = img.load()
 

@@ -2,6 +2,15 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 
 
+def _validate_path(path: str, check_exists: bool = False) -> str:
+    path = os.path.normpath(path)
+    if ".." in path:
+        raise ValueError(f"Caminho invalido: {path}")
+    if check_exists and not os.path.exists(path):
+        raise ValueError(f"Arquivo nao existe: {path}")
+    return path
+
+
 def add_watermark(
     image_path: str,
     text: str = "@seuperfil",
@@ -10,9 +19,14 @@ def add_watermark(
     position: str = "bottom-right",
     font_size: int = 36,
 ) -> str:
+    image_path = _validate_path(image_path, check_exists=True)
+    text = text.strip()[:100]
+
     if output_path is None:
         base, ext = os.path.splitext(image_path)
         output_path = f"{base}_watermarked{ext}"
+    else:
+        output_path = _validate_path(output_path)
 
     img = Image.open(image_path).convert("RGBA")
     overlay = Image.new("RGBA", img.size, (255, 255, 255, 0))
@@ -61,9 +75,14 @@ def add_logo(
     padding: int = 20,
     opacity: int = 200,
 ) -> str:
+    image_path = _validate_path(image_path, check_exists=True)
+    logo_path = _validate_path(logo_path, check_exists=True)
+
     if output_path is None:
         base, ext = os.path.splitext(image_path)
         output_path = f"{base}_branded{ext}"
+    else:
+        output_path = _validate_path(output_path)
 
     img = Image.open(image_path).convert("RGBA")
     logo = Image.open(logo_path).convert("RGBA")

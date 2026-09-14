@@ -2,6 +2,15 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 
 
+def _validate_path(path: str, check_exists: bool = False) -> str:
+    path = os.path.normpath(path)
+    if ".." in path:
+        raise ValueError(f"Caminho invalido: {path}")
+    if check_exists and not os.path.exists(path):
+        raise ValueError(f"Arquivo nao existe: {path}")
+    return path
+
+
 def add_text_overlay(
     image_path: str,
     text: str,
@@ -13,9 +22,14 @@ def add_text_overlay(
     padding: int = 30,
     max_width: int = 900,
 ) -> str:
+    image_path = _validate_path(image_path, check_exists=True)
+    text = text.strip()[:500]
+
     if output_path is None:
         base, ext = os.path.splitext(image_path)
         output_path = f"{base}_text{ext}"
+    else:
+        output_path = _validate_path(output_path)
 
     img = Image.open(image_path).convert("RGBA")
     overlay = Image.new("RGBA", img.size, (255, 255, 255, 0))

@@ -74,7 +74,7 @@ def cmd_post(args):
                 post_to_facebook(image_path, caption)
                 results[platform] = "Sucesso"
         except Exception as e:
-            results[platform] = f"Erro: {e}"
+            results[platform] = f"Erro ao publicar"
 
     print(f"\nResultado: {results}")
     return results
@@ -388,7 +388,7 @@ Comandos disponiveis:
 
     p_list = subparsers.add_parser("list", help="Listar agendamentos")
     p_cancel = subparsers.add_parser("cancel", help="Cancelar agendamento")
-    p_cancel.add_argument("id", type=int)
+    p_cancel.add_argument("id", type=str, help="ID do post")
 
     p_abtest = subparsers.add_parser("abtest", help="A/B Testing de legendas")
     p_abtest.add_argument("topic", nargs="?", help="Topico (para gerar variantes)")
