@@ -30,6 +30,8 @@ from src.competitor import analyze_competitor, generate_competitor_content, find
 from src.multilang import translate_caption, translate_batch, create_multilingual_post, get_supported_languages
 from src.daemon import start_daemon, stop_daemon, daemon_status, run_once
 from src.watcher import watch_folder
+from src.news_scraper import fetch_news, fetch_news_by_topic
+from src.news_generator import generate_post_from_news, generate_daily_news_post, generate_news_roundup, generate_weekly_newsletter
 
 
 def cmd_post(args):
@@ -341,6 +343,26 @@ def cmd_watcher(args):
     watch_folder()
 
 
+def cmd_news(args):
+    print(f"\n{'='*50}")
+    print("NOTICIAS DO MUNDO")
+    print(f"{'='*50}")
+
+    if args.action == "fetch":
+        categories = [c.strip() for c in args.categories.split(",")] if args.categories else None
+        return fetch_news(categories=categories, limit=args.limit)
+    elif args.action == "topic":
+        return fetch_news_by_topic(args.topic, limit=args.limit)
+    elif args.action == "post":
+        categories = [c.strip() for c in args.categories.split(",")] if args.categories else None
+        return generate_daily_news_post(categories=categories, tone=args.tone)
+    elif args.action == "roundup":
+        categories = [c.strip() for c in args.categories.split(",")] if args.categories else None
+        return generate_news_roundup(categories=categories, count=args.limit)
+    elif args.action == "newsletter":
+        return generate_weekly_newsletter(niche=args.niche or "tech")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Automacao completa de redes sociais com IA",
@@ -476,6 +498,14 @@ Comandos disponiveis:
 
     p_watcher = subparsers.add_parser("watcher", help="Monitorar pasta inbox/")
 
+    p_news = subparsers.add_parser("news", help="Noticias e converter em posts")
+    p_news.add_argument("action", choices=["fetch", "topic", "post", "roundup", "newsletter"])
+    p_news.add_argument("--categories", help="Categorias: tech,marketing,business")
+    p_news.add_argument("--topic", help="Topico especifico para buscar")
+    p_news.add_argument("--niche", help="Nicho para newsletter")
+    p_news.add_argument("--limit", type=int, default=5, help="Limite de noticias")
+    p_news.add_argument("-t", "--tone", default="profissional")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -504,6 +534,7 @@ Comandos disponiveis:
         "translate": cmd_translate,
         "daemon": cmd_daemon,
         "watcher": cmd_watcher,
+        "news": cmd_news,
     }
 
     func = commands.get(args.command)
