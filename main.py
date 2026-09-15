@@ -32,6 +32,16 @@ from src.daemon import start_daemon, stop_daemon, daemon_status, run_once
 from src.watcher import watch_folder
 from src.news_scraper import fetch_news, fetch_news_by_topic
 from src.news_generator import generate_post_from_news, generate_daily_news_post, generate_news_roundup, generate_weekly_newsletter
+from src.caption_from_image import analyze_image, generate_caption_from_image, generate_story_from_image
+from src.video_scripts import generate_youtube_script, generate_podcast_script, generate_tiktok_series, generate_webinar_script
+from src.seo_optimizer import optimize_caption_seo, generate_seo_hashtags, analyze_post_seo
+from src.auto_resize import resize_image, resize_for_all, get_platform_sizes
+from src.brand_kit import create_brand, get_brand, update_brand, delete_brand, apply_brand
+from src.trend_finder import find_trending_topics, find_viral_content, find_hashtag_trends
+from src.viral_analyzer import analyze_viral_post, suggest_viral_improvements, generate_viral_hook
+from src.content_curation import curate_and_generate, suggest_curated_sources
+from src.multi_accounts import add_account, list_accounts, switch_account, get_active_account, remove_account
+from src.visual_templates import create_template, list_templates
 
 
 def cmd_post(args):
@@ -363,6 +373,122 @@ def cmd_news(args):
         return generate_weekly_newsletter(niche=args.niche or "tech")
 
 
+def cmd_caption(args):
+    print(f"\n{'='*50}")
+    print("LEGENDA A PARTIR DE IMAGEM")
+    print(f"{'='*50}")
+    if args.story:
+        return generate_story_from_image(args.image)
+    return generate_caption_from_image(args.image, tone=args.tone)
+
+
+def cmd_video(args):
+    print(f"\n{'='*50}")
+    print("ROTEIRO PARA VIDEO")
+    print(f"{'='*50}")
+    if args.type == "youtube":
+        return generate_youtube_script(args.topic, duration=args.duration, tone=args.tone)
+    elif args.type == "podcast":
+        return generate_podcast_script(args.topic, duration=args.duration)
+    elif args.type == "tiktok":
+        return generate_tiktok_series(args.topic, num_videos=args.duration)
+    elif args.type == "webinar":
+        return generate_webinar_script(args.topic, duration=args.duration)
+
+
+def cmd_seo(args):
+    print(f"\n{'='*50}")
+    print("OTIMIZACAO SEO")
+    print(f"{'='*50}")
+    if args.action == "optimize":
+        return optimize_caption_seo(args.caption, target_keyword=args.keyword)
+    elif args.action == "hashtags":
+        return generate_seo_hashtags(args.topic)
+    elif args.action == "analyze":
+        return analyze_post_seo(args.caption)
+
+
+def cmd_resize(args):
+    print(f"\n{'='*50}")
+    print("REDIMENSIONAR IMAGEM")
+    print(f"{'='*50}")
+    if args.platform == "all":
+        return resize_for_all(args.image)
+    return resize_image(args.image, args.platform)
+
+
+def cmd_brand(args):
+    print(f"\n{'='*50}")
+    print("KIT DE MARCA")
+    print(f"{'='*50}")
+    if args.action == "create":
+        return create_brand(args.name, tone=args.tone)
+    elif args.action == "show":
+        return get_brand()
+    elif args.action == "delete":
+        return delete_brand()
+
+
+def cmd_trends(args):
+    print(f"\n{'='*50}")
+    print("FINDER DE TRENDS")
+    print(f"{'='*50}")
+    if args.action == "topics":
+        return find_trending_topics(args.niche)
+    elif args.action == "viral":
+        return find_viral_content(args.niche)
+    elif args.action == "hashtags":
+        return find_hashtag_trends(args.platform)
+
+
+def cmd_viral(args):
+    print(f"\n{'='*50}")
+    print("ANALISE VIRAL")
+    print(f"{'='*50}")
+    if args.action == "analyze":
+        return analyze_viral_post(args.caption)
+    elif args.action == "improve":
+        return suggest_viral_improvements(args.caption)
+    elif args.action == "hooks":
+        return generate_viral_hook(args.topic, num_hooks=args.limit)
+
+
+def cmd_curate(args):
+    print(f"\n{'='*50}")
+    print("CURADORIA DE CONTEUDO")
+    print(f"{'='*50}")
+    if args.action == "generate":
+        return curate_and_generate(feed_url=args.url, niche=args.niche, limit=args.limit)
+    elif args.action == "sources":
+        return suggest_curated_sources(args.niche)
+
+
+def cmd_accounts(args):
+    print(f"\n{'='*50}")
+    print("MULTI-CONTAS")
+    print(f"{'='*50}")
+    if args.action == "add":
+        return add_account(args.name, args.username)
+    elif args.action == "list":
+        return list_accounts()
+    elif args.action == "switch":
+        return switch_account(args.id)
+    elif args.action == "active":
+        return get_active_account()
+    elif args.action == "remove":
+        return remove_account(args.id)
+
+
+def cmd_templates_v(args):
+    print(f"\n{'='*50}")
+    print("TEMPLATES VISUAIS")
+    print(f"{'='*50}")
+    if args.action == "list":
+        return list_templates()
+    elif args.action == "create":
+        return create_template(args.style, args.title, subtitle=args.subtitle or "")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Automacao completa de redes sociais com IA",
@@ -506,6 +632,61 @@ Comandos disponiveis:
     p_news.add_argument("--limit", type=int, default=5, help="Limite de noticias")
     p_news.add_argument("-t", "--tone", default="profissional")
 
+    p_caption = subparsers.add_parser("caption", help="Legenda a partir de imagem")
+    p_caption.add_argument("image", help="Caminho da imagem")
+    p_caption.add_argument("-t", "--tone", default="profissional")
+    p_caption.add_argument("--story", action="store_true", help="Gerar stories")
+
+    p_video = subparsers.add_parser("video", help="Roteiro para videos longos")
+    p_video.add_argument("topic", help="Topico/tema")
+    p_video.add_argument("--type", choices=["youtube", "podcast", "tiktok", "webinar"], default="youtube")
+    p_video.add_argument("--duration", type=int, default=10)
+    p_video.add_argument("-t", "--tone", default="educativo")
+
+    p_seo = subparsers.add_parser("seo", help="Otimizacao SEO")
+    p_seo.add_argument("action", choices=["optimize", "hashtags", "analyze"])
+    p_seo.add_argument("--caption", help="Legenda para analisar/otimizar")
+    p_seo.add_argument("--topic", help="Topico para hashtags")
+    p_seo.add_argument("--keyword", help="Palavra-chave alvo")
+
+    p_resize = subparsers.add_parser("resize", help="Redimensionar para redes")
+    p_resize.add_argument("image", help="Caminho da imagem")
+    p_resize.add_argument("--platform", default="instagram_feed", help="Plataforma ou 'all'")
+
+    p_brand = subparsers.add_parser("brand", help="Kit de marca")
+    p_brand.add_argument("action", choices=["create", "show", "update", "delete"])
+    p_brand.add_argument("--name", help="Nome da marca")
+    p_brand.add_argument("-t", "--tone", default="profissional")
+
+    p_trends = subparsers.add_parser("trends", help="Finder de trends")
+    p_trends.add_argument("action", choices=["topics", "viral", "hashtags"])
+    p_trends.add_argument("--niche", default="all", help="Nicho")
+    p_trends.add_argument("-p", "--platform", default="instagram")
+
+    p_viral = subparsers.add_parser("viral", help="Analise viral")
+    p_viral.add_argument("action", choices=["analyze", "improve", "hooks"])
+    p_viral.add_argument("--caption", help="Legenda para analisar/melhorar")
+    p_viral.add_argument("--topic", help="Topico para ganchos")
+    p_viral.add_argument("--limit", type=int, default=10)
+
+    p_curate = subparsers.add_parser("curate", help="Curadoria de conteudo")
+    p_curate.add_argument("action", choices=["generate", "sources"])
+    p_curate.add_argument("--url", help="URL do feed RSS")
+    p_curate.add_argument("--niche", default="tech", help="Nicho")
+    p_curate.add_argument("--limit", type=int, default=5)
+
+    p_accounts = subparsers.add_parser("accounts", help="Multi-contas")
+    p_accounts.add_argument("action", choices=["add", "list", "switch", "active", "remove"])
+    p_accounts.add_argument("--name", help="Nome da conta")
+    p_accounts.add_argument("--username", help="Username")
+    p_accounts.add_argument("--id", type=int, help="ID da conta")
+
+    p_templates_v = subparsers.add_parser("templates-v", help="Templates visuais")
+    p_templates_v.add_argument("action", choices=["list", "create"])
+    p_templates_v.add_argument("--style", help="Estilo do template")
+    p_templates_v.add_argument("--title", help="Titulo do template")
+    p_templates_v.add_argument("--subtitle", help="Subtitulo")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -535,6 +716,16 @@ Comandos disponiveis:
         "daemon": cmd_daemon,
         "watcher": cmd_watcher,
         "news": cmd_news,
+        "caption": cmd_caption,
+        "video": cmd_video,
+        "seo": cmd_seo,
+        "resize": cmd_resize,
+        "brand": cmd_brand,
+        "trends": cmd_trends,
+        "viral": cmd_viral,
+        "curate": cmd_curate,
+        "accounts": cmd_accounts,
+        "templates-v": cmd_templates_v,
     }
 
     func = commands.get(args.command)
